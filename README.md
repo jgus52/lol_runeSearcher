@@ -5,6 +5,10 @@
 
 <img width="80%" src = "https://user-images.githubusercontent.com/78287136/151167706-4608d502-4be3-4d69-92d0-302e7f6c26a1.png">
 
+## Back-end
+
+https://github.com/jgus52/lol_ingame_server
+
 - React
 - React Hook Form
 - Styled Component
