@@ -85,6 +85,7 @@ const Home = () => {
 
   const onSubmit = () => {
     const { summonerName } = getValues();
+    console.log(summonerName);
     getOpponent({
       variables: { summonerName },
       onCompleted: async ({ getOpponent }) => {
