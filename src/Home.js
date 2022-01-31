@@ -112,6 +112,7 @@ const Home = () => {
       },
     });
   };
+  console.log(oppose.getOpponent.length);
 
   if (loading || gettingLeague) {
     return <h1>loading</h1>;
@@ -130,6 +131,25 @@ const Home = () => {
           </form>
         </InputContainer>
         <ChampContainer></ChampContainer>
+      </Layout>
+    );
+  }
+  if (oppose?.getOpponent.length == 0) {
+    return (
+      <Layout>
+        <InputContainer>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <Input
+              {...register("summonerName")}
+              type="text"
+              placeholder="summonerName"
+            ></Input>
+            <Search type="submit" value="search" />
+          </form>
+        </InputContainer>
+        <ChampContainer>
+          <p>Not in Gaming</p>
+        </ChampContainer>
       </Layout>
     );
   }
