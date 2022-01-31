@@ -112,7 +112,6 @@ const Home = () => {
       },
     });
   };
-  console.log(oppose.getOpponent.length);
 
   if (loading || gettingLeague) {
     return <h1>loading</h1>;
