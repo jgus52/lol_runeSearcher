@@ -134,7 +134,7 @@ const Home = () => {
       </Layout>
     );
   }
-  if (oppose?.getOpponent.length == 0) {
+  if (oppose?.getOpponent?.length == 0) {
     return (
       <Layout>
         <InputContainer>
