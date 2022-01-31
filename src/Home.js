@@ -46,42 +46,42 @@ const GETLEAGUEINFO_MUTATION = gql`
     }
   }
 `;
-const GETCHAMPINFO_QUERY = gql`
-  query getChampInfo($summonerIds: [String!], $championIds: [Int!]) {
-    getChampInfo(summonerIds: $summonerIds, championIds: $championIds) {
-      win
-      lose
-      kill
-      death
-      assist
-    }
-  }
-`;
-const UPDATECHAMPSINFO_MUTATION = gql`
-  mutation updateChampsInfo($puuids: [String!]) {
-    updateChampsInfo(puuids: $puuids) {
-      ok
-      message
-    }
-  }
-`;
+// const GETCHAMPINFO_QUERY = gql`
+//   query getChampInfo($summonerIds: [String!], $championIds: [Int!]) {
+//     getChampInfo(summonerIds: $summonerIds, championIds: $championIds) {
+//       win
+//       lose
+//       kill
+//       death
+//       assist
+//     }
+//   }
+// `;
+// const UPDATECHAMPSINFO_MUTATION = gql`
+//   mutation updateChampsInfo($puuids: [String!]) {
+//     updateChampsInfo(puuids: $puuids) {
+//       ok
+//       message
+//     }
+//   }
+// `;
 
 const Home = () => {
-  const { register, handleSubmit, getValues, reset } = useForm({
+  const { register, handleSubmit, getValues } = useForm({
     mode: "onSubmit",
   });
   const [getOpponent, { loading, data: oppose }] =
     useLazyQuery(GETOPPONENT_QUERY);
   const [getLeagueInfo, { loading: gettingLeague, data: leagueInfo }] =
     useMutation(GETLEAGUEINFO_MUTATION);
-  const [getChampInfo, { data: championInfos }] =
-    useLazyQuery(GETCHAMPINFO_QUERY);
-  const [updateChampsInfo, { data: updateChampReturn }] = useMutation(
-    UPDATECHAMPSINFO_MUTATION,
-    {
-      refetchQueries: [GETCHAMPINFO_QUERY],
-    }
-  );
+  // const [getChampInfo, { data: championInfos }] =
+  //   useLazyQuery(GETCHAMPINFO_QUERY);
+  // const [updateChampsInfo, { data: updateChampReturn }] = useMutation(
+  //   UPDATECHAMPSINFO_MUTATION,
+  //   {
+  //     refetchQueries: [GETCHAMPINFO_QUERY],
+  //   }
+  // );
 
   const onSubmit = () => {
     const { summonerName } = getValues();
