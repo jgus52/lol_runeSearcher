@@ -85,7 +85,7 @@ const Home = () => {
 
   const onSubmit = () => {
     const { summonerName } = getValues();
-    console.log(summonerName);
+    //console.log(summonerName);
     getOpponent({
       variables: { summonerName },
       onCompleted: async ({ getOpponent }) => {
@@ -98,17 +98,17 @@ const Home = () => {
           championIds.push(ele.championId);
         });
 
-        console.log(puuids);
-        console.log(championIds);
+        // console.log(puuids);
+        // console.log(championIds);
         await getLeagueInfo({
           variables: { summonerIds },
         });
-        getChampInfo({
-          variables: { summonerIds: puuids, championIds },
-        });
-        updateChampsInfo({
-          variables: { puuids },
-        });
+        // getChampInfo({
+        //   variables: { summonerIds: puuids, championIds },
+        // });
+        // updateChampsInfo({
+        //   variables: { puuids },
+        // });
       },
     });
   };
@@ -116,7 +116,7 @@ const Home = () => {
   if (loading || gettingLeague) {
     return <h1>loading</h1>;
   }
-  if (!oppose || !leagueInfo || !championInfos) {
+  if (!oppose) {
     return (
       <Layout>
         <InputContainer>
@@ -147,7 +147,7 @@ const Home = () => {
       </InputContainer>
       <ChampContainer>
         {oppose &&
-          championInfos &&
+          leagueInfo &&
           oppose?.getOpponent?.map((d, index) => (
             <Player key={index}>
               <Champ>
@@ -206,74 +206,6 @@ const Home = () => {
               </Champ>
               <RowContainer justifyContent="start" width="100%">
                 <p style={{ margin: 0 }}>{d.summonerName}</p>
-              </RowContainer>
-              <RowContainer justifyContent="start" width="100%">
-                <p
-                  style={{
-                    fontSize: 12,
-                    marginTop: 0,
-                    marginBottom: 0,
-                    marginRight: 5,
-                  }}
-                >
-                  {d.championName}
-                </p>
-                <p
-                  style={{
-                    fontSize: 12,
-                    marginTop: 0,
-                    marginBottom: 0,
-                    marginRight: 5,
-                    marginLeft: 5,
-                  }}
-                >
-                  {`${
-                    championInfos.getChampInfo[index]?.win
-                      ? championInfos.getChampInfo[index]?.win
-                      : 0
-                  }W ${
-                    championInfos.getChampInfo[index]?.lose
-                      ? championInfos.getChampInfo[index]?.lose
-                      : 0
-                  }L`}
-                </p>
-                <p
-                  style={{
-                    fontSize: 12,
-                    marginTop: 0,
-                    marginBottom: 0,
-                    marginRight: 5,
-                    marginLeft: 5,
-                  }}
-                >
-                  {`${
-                    championInfos.getChampInfo[index]?.kill
-                      ? (
-                          championInfos.getChampInfo[index]?.kill /
-                          (championInfos.getChampInfo[index]?.win +
-                            championInfos.getChampInfo[index]?.lose)
-                        ).toPrecision(2)
-                      : 0
-                  }/
-                      ${
-                        championInfos.getChampInfo[index]?.death
-                          ? (
-                              championInfos.getChampInfo[index]?.death /
-                              (championInfos.getChampInfo[index]?.win +
-                                championInfos.getChampInfo[index]?.lose)
-                            ).toPrecision(2)
-                          : 0
-                      }/
-                      ${
-                        championInfos.getChampInfo[index]?.assist
-                          ? (
-                              championInfos.getChampInfo[index]?.assist /
-                              (championInfos.getChampInfo[index]?.win +
-                                championInfos.getChampInfo[index]?.lose)
-                            ).toPrecision(2)
-                          : 0
-                      }`}
-                </p>
               </RowContainer>
             </Player>
           ))}
