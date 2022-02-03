@@ -13,6 +13,7 @@ import Player from "./comp/Player";
 import Search from "./comp/Search";
 import RuneTooltip from "./comp/RuneTooltip";
 import LeagueInfo from "./comp/LeagueInfos";
+import logo from "./logoSmall.png";
 
 const GETOPPONENT_QUERY = gql`
   query getOpponent($summonerName: String!) {
@@ -120,6 +121,7 @@ const Home = () => {
     return (
       <Layout>
         <InputContainer>
+          <img src={logo} alt="logo" style={{ width: 118, height: 66 }} />
           <form onSubmit={handleSubmit(onSubmit)}>
             <Input
               {...register("summonerName")}
