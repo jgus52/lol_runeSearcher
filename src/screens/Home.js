@@ -1,19 +1,18 @@
 import { gql, useLazyQuery, useMutation } from "@apollo/client";
-import Input from "./comp/Input";
-import InputContainer from "./comp/InputContainer";
-import Layout from "./comp/Layout";
+import Input from "../comp/Input";
+import InputContainer from "../comp/InputContainer";
+import Layout from "../comp/Layout";
 import { useForm } from "react-hook-form";
-//import { useState } from "react";
-import ChampContainer from "./comp/ChampContainer";
-import Champ from "./comp/Champ";
-//import SpellImg from "./comp/Spell";
-import ColumnContainer from "./comp/ColumnContainer";
-import RowContainer from "./comp/RowContainer";
-import Player from "./comp/Player";
-import Search from "./comp/Search";
-import RuneTooltip from "./comp/RuneTooltip";
-import LeagueInfo from "./comp/LeagueInfos";
-import logo from "./logoSmall.png";
+import ChampContainer from "../comp/ChampContainer";
+import Champ from "../comp/Champ";
+import SpellImg from "../comp/Spell";
+import ColumnContainer from "../comp/ColumnContainer";
+import RowContainer from "../comp/RowContainer";
+import Player from "../comp/Player";
+import Search from "../comp/Search";
+import RuneTooltip from "../comp/RuneTooltip";
+import LeagueInfo from "../comp/LeagueInfos";
+import { useEffect, useState } from "react";
 
 const GETOPPONENT_QUERY = gql`
   query getOpponent($summonerName: String!) {
@@ -36,7 +35,7 @@ const GETOPPONENT_QUERY = gql`
     }
   }
 `;
-const GETLEAGUEINFO_MUTATION = gql`
+export const GETLEAGUEINFO_MUTATION = gql`
   mutation getLeagueInfo($summonerIds: [String!]) {
     getLeagueInfo(summonerIds: $summonerIds) {
       wins
@@ -47,49 +46,36 @@ const GETLEAGUEINFO_MUTATION = gql`
     }
   }
 `;
-// const GETCHAMPINFO_QUERY = gql`
-//   query getChampInfo($summonerIds: [String!], $championIds: [Int!]) {
-//     getChampInfo(summonerIds: $summonerIds, championIds: $championIds) {
-//       win
-//       lose
-//       kill
-//       death
-//       assist
-//     }
-//   }
-// `;
-// const UPDATECHAMPSINFO_MUTATION = gql`
-//   mutation updateChampsInfo($puuids: [String!]) {
-//     updateChampsInfo(puuids: $puuids) {
-//       ok
-//       message
-//     }
-//   }
-// `;
+const GETCHAMPINFO_QUERY = gql`
+  query getChampInfo($summonerIds: [String!], $championIds: [Int!]) {
+    getChampInfo(summonerIds: $summonerIds, championIds: $championIds) {
+      win
+      lose
+      kill
+      death
+      assist
+    }
+  }
+`;
+export const UPDATECHAMPSINFO_MUTATION = gql`
+  mutation updateChampsInfo($puuids: [String!]) {
+    updateChampsInfo(puuids: $puuids) {
+      ok
+      message
+    }
+  }
+`;
 
 const Home = () => {
   const { register, handleSubmit, getValues } = useForm({
     mode: "onSubmit",
   });
-  const [getOpponent, { loading, data: oppose }] =
-    useLazyQuery(GETOPPONENT_QUERY);
-  const [getLeagueInfo, { loading: gettingLeague, data: leagueInfo }] =
-    useMutation(GETLEAGUEINFO_MUTATION);
-  // const [getChampInfo, { data: championInfos }] =
-  //   useLazyQuery(GETCHAMPINFO_QUERY);
-  // const [updateChampsInfo, { data: updateChampReturn }] = useMutation(
-  //   UPDATECHAMPSINFO_MUTATION,
-  //   {
-  //     refetchQueries: [GETCHAMPINFO_QUERY],
-  //   }
-  // );
-
-  const onSubmit = () => {
-    const { summonerName } = getValues();
-    //console.log(summonerName);
-    getOpponent({
-      variables: { summonerName },
+  const [getOpponent, { loading, data: oppose, refetch, called }] =
+    useLazyQuery(GETOPPONENT_QUERY, {
+      fetchPolicy: "network-only",
+      notifyOnNetworkStatusChange: true,
       onCompleted: async ({ getOpponent }) => {
+        //console.log("get Opponent Completed!");
         let summonerIds = [];
         let puuids = [];
         let championIds = [];
@@ -98,7 +84,6 @@ const Home = () => {
           puuids.push(ele.puuid);
           championIds.push(ele.championId);
         });
-
         // console.log(puuids);
         // console.log(championIds);
         await getLeagueInfo({
@@ -112,62 +97,72 @@ const Home = () => {
         // });
       },
     });
+  const [getLeagueInfo, { loading: gettingLeague, data: leagueInfo }] =
+    useMutation(GETLEAGUEINFO_MUTATION, {});
+  const [getChampInfo, { data: championInfos }] =
+    useLazyQuery(GETCHAMPINFO_QUERY);
+  const [updateChampsInfo, { data: updateChampReturn }] = useMutation(
+    UPDATECHAMPSINFO_MUTATION,
+    {
+      refetchQueries: [GETCHAMPINFO_QUERY],
+    }
+  );
+
+  const [summonerName, setSummonerName] = useState("");
+
+  const onSubmit = ({ summonerNameInput }) => {
+    setSummonerName(() => summonerNameInput);
   };
 
-  if (loading || gettingLeague) {
-    return <h1>loading</h1>;
-  }
-  if (!oppose) {
-    return (
-      <Layout>
-        <InputContainer>
-          <img src={logo} alt="logo" style={{ width: 118, height: 66 }} />
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <Input
-              {...register("summonerName")}
-              type="text"
-              placeholder="summonerName"
-            ></Input>
-            <Search type="submit" value="search" />
-          </form>
-        </InputContainer>
-        <ChampContainer></ChampContainer>
-      </Layout>
-    );
-  }
-  if (oppose?.getOpponent?.length == 0) {
-    return (
-      <Layout>
-        <InputContainer>
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <Input
-              {...register("summonerName")}
-              type="text"
-              placeholder="summonerName"
-            ></Input>
-            <Search type="submit" value="search" />
-          </form>
-        </InputContainer>
-        <ChampContainer>
-          <p>Not in Gaming</p>
-        </ChampContainer>
-      </Layout>
-    );
-  }
+  useEffect(() => {
+    if (summonerName !== "") {
+      if (called) {
+        refetch({ summonerName });
+      } else {
+        getOpponent({
+          variables: { summonerName },
+        });
+      }
+    }
+  }, [summonerName]);
+
   return (
     <Layout>
-      <InputContainer>
-        <form onSubmit={handleSubmit(onSubmit)}>
+      <div
+        style={{
+          width: "100%",
+          position: "fixed",
+          top: 80,
+          backgroundColor: "lightgrey",
+          paddingBottom: 5,
+        }}
+      >
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          style={{
+            width: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
           <Input
-            {...register("summonerName")}
+            {...register("summonerNameInput")}
             type="text"
-            placeholder="summonerName"
+            placeholder="Put Summoner Name"
           ></Input>
-          <Search type="submit" value="search" />
+          {loading || gettingLeague ? (
+            <Search type="submit" value="loading" loading="true" disabled />
+          ) : (
+            <Search type="submit" value="search" />
+          )}
         </form>
-      </InputContainer>
+      </div>
       <ChampContainer>
-        {oppose &&
+        {oppose && oppose?.getOpponent?.length == 0 ? (
+          <p>Not in Gaming</p>
+        ) : (
+          oppose &&
           leagueInfo &&
           oppose?.getOpponent?.map((d, index) => (
             <Player key={index}>
@@ -229,7 +224,8 @@ const Home = () => {
                 <p style={{ margin: 0 }}>{d.summonerName}</p>
               </RowContainer>
             </Player>
-          ))}
+          ))
+        )}
       </ChampContainer>
     </Layout>
   );

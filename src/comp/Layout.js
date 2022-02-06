@@ -2,7 +2,7 @@ import styled from "styled-components";
 
 const Layer = styled.div`
   display: flex;
-  height: 100vh;
+  padding-top: 130px;
   justify-content: center;
   align-items: center;
   flex-direction: column;

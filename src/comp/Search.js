@@ -7,7 +7,7 @@ const Search = styled.input`
   width: 15%;
   padding: 7px 10px;
   border-radius: 5px;
-  cursor: pointer;
+  cursor: ${(props) => (props.loading ? "wait" : "pointer")};
   &:hover {
   }
 `;

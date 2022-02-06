@@ -8,6 +8,7 @@ const Container = styled.div`
   height: 80px;
   width: 100%;
   margin-bottom: 5px;
+  padding: 10px;
 `;
 
 const Champ = ({ children }) => {
