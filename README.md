@@ -6,9 +6,9 @@ Enemy에서 닉네임을 검색하면 상대 팀의 룬 정보와 랭크게임 �
 <img width="80%" src = "https://user-images.githubusercontent.com/78287136/151167706-4608d502-4be3-4d69-92d0-302e7f6c26a1.png">
 
 Allies에서 챔피언 선택 창의 "닉네임"님이 방에 참가했습니다...를 복사해 붙여넣으
-면 우리 팀의 모스트 챔피언 정보와 리그 정보를 보여줍니다.
+면 우리 팀의 모스트 챔피언 정보와 최근 8게임 리그 정보를 보여줍니다.
 
-<img width="80%" src = "https://user-images.githubusercontent.com/78287136/152680944-2f67e29d-bc09-4aff-b940-15779a3d89be.png">
+<img width="80%" src = "https://user-images.githubusercontent.com/78287136/152781011-6aeabc28-d21e-4937-87bb-bb5a16ab9521.png">
 
 - React
 - React Hook Form

@@ -63,10 +63,7 @@ const MultiSearch = () => {
   const [getLeagueInfo, { data: leagueInfo, loading: leagueLoading }] =
     useMutation(GETLEAGUEINFO_MUTATION);
   const [updateChampsInfo, { data: updateChampReturn }] = useMutation(
-    UPDATECHAMPSINFO_MUTATION,
-    {
-      refetchQueries: [GETALLCHAMPINFO_QUERY],
-    }
+    UPDATECHAMPSINFO_MUTATION
   );
   const [summonerNames, setSummonerNames] = useState([]);
 
