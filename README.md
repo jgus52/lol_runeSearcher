@@ -8,7 +8,7 @@ Enemy에서 닉네임을 검색하면 상대 팀의 룬 정보와 랭크게임 �
 Allies에서 챔피언 선택 창의 "닉네임"님이 방에 참가했습니다...를 복사해 붙여넣으
 면 우리 팀의 모스트 챔피언 정보와 최근 8게임 리그 정보를 보여줍니다.
 
-<img width="80%" src = "https://user-images.githubusercontent.com/78287136/152781011-6aeabc28-d21e-4937-87bb-bb5a16ab9521.png">
+<img width="80%" src = "https://user-images.githubusercontent.com/78287136/152781281-dd50cfbf-29fe-49c4-8c2e-18748244b599.png">
 
 - React
 - React Hook Form
