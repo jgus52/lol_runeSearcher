@@ -69,7 +69,7 @@ const MultiSearch = () => {
 
   const onSubmit = ({ summonerInfos }) => {
     //console.log(summonerInfos);
-    setSummonerNames(summonerInfos.split("님이 방에 참가했습니다."));
+    setSummonerNames(summonerInfos.split("님이 로비에 참가했습니다."));
   };
 
   useEffect(() => {
