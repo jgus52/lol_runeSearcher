@@ -1,104 +1,55 @@
 import { gql, useLazyQuery, useMutation } from "@apollo/client";
-import Input from "../comp/Input";
-import InputContainer from "../comp/InputContainer";
 import Layout from "../comp/Layout";
-import { useForm } from "react-hook-form";
-import ChampContainer from "../comp/ChampContainer";
-import Champ from "../comp/Champ";
-import SpellImg from "../comp/Spell";
 import ColumnContainer from "../comp/ColumnContainer";
 import RowContainer from "../comp/RowContainer";
-import Player from "../comp/Player";
-import Search from "../comp/Search";
 import RuneTooltip from "../comp/RuneTooltip";
-import LeagueInfo from "../comp/LeagueInfos";
 import { useEffect, useState } from "react";
-
-const GETOPPONENT_QUERY = gql`
-  query getOpponent($summonerName: String!) {
-    getOpponent(summonerName: $summonerName) {
-      championId
-      championName
-      championImg
-      summonerName
-      summonerId
-      puuid
-      perks {
-        perkIds
-        perkIcons
-        statIcons
-        perkNames
-        perkInfos
-      }
-      spell1Img
-      spell2Img
-    }
-  }
-`;
-export const GETLEAGUEINFO_MUTATION = gql`
-  mutation getLeagueInfo($summonerIds: [String!]) {
-    getLeagueInfo(summonerIds: $summonerIds) {
-      wins
-      losses
-      tier
-      rank
-      leaguePoints
-    }
-  }
-`;
-const GETCHAMPINFO_QUERY = gql`
-  query getChampInfo($summonerIds: [String!], $championIds: [Int!]) {
-    getChampInfo(summonerIds: $summonerIds, championIds: $championIds) {
-      win
-      lose
-      kill
-      death
-      assist
-    }
-  }
-`;
-export const UPDATECHAMPSINFO_MUTATION = gql`
-  mutation updateChampsInfo($puuids: [String!]) {
-    updateChampsInfo(puuids: $puuids) {
-      ok
-      message
-    }
-  }
-`;
+import HeaderInput from "../comp/HeaderInput";
+import styled from "styled-components";
+import {
+  GETCHAMPINFO_QUERY,
+  GETLEAGUEINFO_QUERY,
+  GETOPPONENT_QUERY,
+  UPDATECHAMPSINFO_MUTATION,
+  UPDATEIDS_MUTATION,
+} from "../Schema";
 
 const Home = () => {
-  const { register, handleSubmit, getValues } = useForm({
-    mode: "onSubmit",
+  const [
+    getOpponent,
+    { loading, data: oppose, refetch, called, error: getOpponentError },
+  ] = useLazyQuery(GETOPPONENT_QUERY, {
+    fetchPolicy: "network-only",
+    notifyOnNetworkStatusChange: true,
+    onCompleted: async ({ getOpponent }) => {
+      //console.log("get Opponent Completed!");
+      let summonerIds = [];
+      let puuids = [];
+      let championIds = [];
+      let summonerNames = [];
+      for (let ele of getOpponent) {
+        summonerNames.push(ele.summonerName);
+        summonerIds.push(ele.summonerId);
+        championIds.push(ele.championId);
+      }
+      // console.log(puuids);
+      // console.log(championIds);
+      await getLeagueInfo({
+        variables: { summonerIds },
+      });
+      // updateIds({
+      //  variables : {summonerNames}
+      // })
+      // getChampInfo({
+      //   variables: { summonerIds: puuids, championIds },
+      // });
+      // updateChampsInfo({
+      //   variables: { puuids },
+      // });
+    },
   });
-  const [getOpponent, { loading, data: oppose, refetch, called }] =
-    useLazyQuery(GETOPPONENT_QUERY, {
-      fetchPolicy: "network-only",
-      notifyOnNetworkStatusChange: true,
-      onCompleted: async ({ getOpponent }) => {
-        //console.log("get Opponent Completed!");
-        let summonerIds = [];
-        let puuids = [];
-        let championIds = [];
-        await getOpponent.map((ele) => {
-          summonerIds.push(ele.summonerId);
-          puuids.push(ele.puuid);
-          championIds.push(ele.championId);
-        });
-        // console.log(puuids);
-        // console.log(championIds);
-        await getLeagueInfo({
-          variables: { summonerIds },
-        });
-        // getChampInfo({
-        //   variables: { summonerIds: puuids, championIds },
-        // });
-        // updateChampsInfo({
-        //   variables: { puuids },
-        // });
-      },
-    });
   const [getLeagueInfo, { loading: gettingLeague, data: leagueInfo }] =
-    useMutation(GETLEAGUEINFO_MUTATION, {});
+    useLazyQuery(GETLEAGUEINFO_QUERY, {});
   const [getChampInfo, { data: championInfos }] =
     useLazyQuery(GETCHAMPINFO_QUERY);
   const [updateChampsInfo, { data: updateChampReturn }] = useMutation(
@@ -107,12 +58,9 @@ const Home = () => {
       refetchQueries: [GETCHAMPINFO_QUERY],
     }
   );
+  const [updateIds] = useMutation(UPDATEIDS_MUTATION);
 
   const [summonerName, setSummonerName] = useState("");
-
-  const onSubmit = ({ summonerNameInput }) => {
-    setSummonerName(() => summonerNameInput);
-  };
 
   useEffect(() => {
     if (summonerName !== "") {
@@ -128,76 +76,83 @@ const Home = () => {
 
   return (
     <Layout>
-      <div
+      <HeaderInput
+        setState={setSummonerName}
+        loading={loading}
+        gettingLeague={gettingLeague}
+        placeholder={`Put Summoner Name`}
+      />
+      <ColumnContainer
         style={{
-          width: "100%",
-          position: "fixed",
-          top: 80,
-          backgroundColor: "lightgrey",
-          paddingBottom: 5,
+          justifyContent: "top",
+          alignItems: "center",
+          height: "80%",
+          width: 960,
+          padding: 3,
         }}
       >
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          style={{
-            width: "100%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Input
-            {...register("summonerNameInput")}
-            type="text"
-            placeholder="Put Summoner Name"
-          ></Input>
-          {loading || gettingLeague ? (
-            <Search type="submit" value="loading" loading="true" disabled />
-          ) : (
-            <Search type="submit" value="search" />
-          )}
-        </form>
-      </div>
-      <ChampContainer>
-        {oppose && oppose?.getOpponent?.length == 0 ? (
-          <p>Not in Gaming</p>
+        {getOpponentError ? (
+          <p>{getOpponentError.message}</p>
         ) : (
           oppose &&
-          leagueInfo &&
           oppose?.getOpponent?.map((d, index) => (
-            <Player key={index}>
-              <Champ>
+            <ColumnContainer
+              key={index}
+              style={{
+                width: 800,
+                borderRadius: 4,
+                padding: "1% 3%",
+                backgroundColor: "rgba(255, 192, 203, 0.6)",
+                marginBottom: 5,
+              }}
+            >
+              <RowContainer
+                style={{
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  height: "80%",
+                  width: 800,
+                  padding: 3,
+                }}
+              >
                 <RowContainer justifyContent="center">
                   <img
                     src={d.championImg}
                     style={{ height: "76px", margin: 3 }}
+                    alt={"champion"}
                   />
                   <ColumnContainer>
                     <img
                       src={d.spell1Img}
                       style={{ height: "35px", margin: 3 }}
+                      alt={"spell1"}
                     />
                     <img
                       src={d.spell2Img}
                       style={{ height: "35px", margin: 3 }}
+                      alt={"spell2"}
                     />
                   </ColumnContainer>
-                  <LeagueInfo>
-                    <p style={{ fontSize: 15, margin: 3 }}>
-                      {leagueInfo.getLeagueInfo[index]?.tier +
-                        " " +
-                        leagueInfo.getLeagueInfo[index]?.rank}
-                    </p>
-                    <p style={{ fontSize: 15, margin: 3 }}>
-                      {leagueInfo.getLeagueInfo[index]?.leaguePoints}p
-                    </p>
-                    <p style={{ fontSize: 15, margin: 3 }}>
-                      {leagueInfo.getLeagueInfo[index]?.wins +
-                        "W " +
-                        leagueInfo.getLeagueInfo[index]?.losses +
-                        "L"}
-                    </p>
-                  </LeagueInfo>
+                  <ColumnContainer alignItems={"flex-start"}>
+                    {leagueInfo ? (
+                      <>
+                        <p style={{ fontSize: 15, margin: 3 }}>
+                          {leagueInfo.getLeagueInfo[index]?.tier +
+                            " " +
+                            leagueInfo.getLeagueInfo[index]?.rank}
+                        </p>
+                        <p style={{ fontSize: 15, margin: 3 }}>
+                          {leagueInfo.getLeagueInfo[index]?.leaguePoints}p
+                        </p>
+                        <p style={{ fontSize: 15, margin: 3 }}>
+                          {leagueInfo.getLeagueInfo[index]?.wins +
+                            "W " +
+                            leagueInfo.getLeagueInfo[index]?.losses +
+                            "L"}
+                        </p>
+                      </>
+                    ) : null}
+                  </ColumnContainer>
                 </RowContainer>
                 <RowContainer>
                   {d?.perks.perkIcons.map((e, index) => (
@@ -210,23 +165,29 @@ const Home = () => {
                         src={e}
                         style={{ height: "40px", margin: 5 }}
                         key={index}
+                        alt={"rune"}
                       />
                     </RuneTooltip>
                   ))}
                   <ColumnContainer justifyContent="center">
                     {d?.perks.statIcons.map((e, index) => (
-                      <img src={e} style={{ height: "20px" }} key={index} />
+                      <img
+                        src={e}
+                        style={{ height: "20px" }}
+                        key={index}
+                        alt={"stat Rune"}
+                      />
                     ))}
                   </ColumnContainer>
                 </RowContainer>
-              </Champ>
+              </RowContainer>
               <RowContainer justifyContent="start" width="100%">
                 <p style={{ margin: 0 }}>{d.summonerName}</p>
               </RowContainer>
-            </Player>
+            </ColumnContainer>
           ))
         )}
-      </ChampContainer>
+      </ColumnContainer>
     </Layout>
   );
 };

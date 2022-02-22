@@ -8,8 +8,8 @@ const Container = styled.div`
   width: ${(props) => props.width};
 `;
 
-const RowContainer = ({ children, justifyContent, width }) => (
-  <Container justifyContent={justifyContent} width={width}>
+const RowContainer = ({ children, justifyContent, width, style }) => (
+  <Container justifyContent={justifyContent} width={width} style={style}>
     {children}
   </Container>
 );

@@ -5,6 +5,7 @@ import logo from "../logoSmall.png";
 const Container = styled.div`
   display: flex;
   align-items: center;
+  justify-content: center;
   height: 80px;
   width: 100%;
   position: fixed;
@@ -16,7 +17,7 @@ const Content = styled.div`
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  width: 100%;
+  width: 960px;
 `;
 
 const Logo = styled.img`

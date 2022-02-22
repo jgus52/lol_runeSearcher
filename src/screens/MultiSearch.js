@@ -1,153 +1,87 @@
 import Layout from "../comp/Layout";
-import InputContainer from "../comp/InputContainer";
-import Input from "../comp/Input";
-import ChampContainer from "../comp/ChampContainer";
-import Search from "../comp/Search";
-import logo from "../logoSmall.png";
-import { useForm } from "react-hook-form";
-import Header from "../comp/Header";
-import { Link } from "react-router-dom";
 import { gql, useLazyQuery, useMutation } from "@apollo/client";
 import { useEffect, useState } from "react";
-import { GETLEAGUEINFO_MUTATION, UPDATECHAMPSINFO_MUTATION } from "./Home";
-import Player from "../comp/Player";
 import RowContainer from "../comp/RowContainer";
 import ColumnContainer from "../comp/ColumnContainer";
-
-const GETALLCHAMPINFO_QUERY = gql`
-  query getAllChampInfo($summonerNames: [String]) {
-    getAllChampInfo(summonerNames: $summonerNames) {
-      champ {
-        id
-        championName
-        championImg
-        win
-        lose
-        kill
-        death
-        assist
-      }
-      user {
-        id
-        puuid
-        name
-      }
-    }
-  }
-`;
+import HeaderInput from "../comp/HeaderInput";
+import {
+  GETALLCHAMPINFO_QUERY,
+  GETLEAGUEINFO_QUERY,
+  UPDATECHAMPSINFO_MUTATION,
+  UPDATEIDS_MUTATION,
+} from "../Schema";
+import { withTheme } from "styled-components";
 
 const MultiSearch = () => {
-  const { register, handleSubmit, getValues } = useForm({
-    mode: "onSubmit",
-  });
-  const [getAllChampInfo, { data, loading, called, refetch }] = useLazyQuery(
-    GETALLCHAMPINFO_QUERY,
-    {
+  const [getAllChampInfo, { data, loading, called, refetch, error }] =
+    useLazyQuery(GETALLCHAMPINFO_QUERY, {
       fetchPolicy: "network-only",
       notifyOnNetworkStatusChange: true,
       onCompleted: async ({ getAllChampInfo }) => {
         let summonerIds = [];
         let puuids = [];
-        await getAllChampInfo.map((ele) => {
+        for await (const ele of getAllChampInfo) {
           summonerIds.push(ele.user.id);
           puuids.push(ele.user.puuid);
-        });
+        }
         //console.log(puuids);
         getLeagueInfo({ variables: { summonerIds } });
-        // updateChampsInfo({
-        //   variables: { puuids },
-        // });
+        updateIds({
+          variables: { summonerNames: input },
+        });
+        updateChampsInfo({
+          variables: { puuids },
+        });
       },
-    }
-  );
+    });
   const [getLeagueInfo, { data: leagueInfo, loading: leagueLoading }] =
-    useMutation(GETLEAGUEINFO_MUTATION);
+    useLazyQuery(GETLEAGUEINFO_QUERY);
   const [updateChampsInfo, { data: updateChampReturn }] = useMutation(
     UPDATECHAMPSINFO_MUTATION
   );
-  const [summonerNames, setSummonerNames] = useState([]);
-
-  const onSubmit = ({ summonerInfos }) => {
-    //console.log(summonerInfos);
-    setSummonerNames(summonerInfos.split("님이 로비에 참가하셨습니다."));
-  };
+  const [updateIds] = useMutation(UPDATEIDS_MUTATION);
+  const [summonerNames, setSummonerNames] = useState("");
+  let input = [];
 
   useEffect(() => {
-    if (summonerNames.length !== 0) {
-      if (called) {
-        //console.log("fetching");
-        refetch({ summonerNames });
-      } else {
-        //console.log("fetching");
-        getAllChampInfo({
-          variables: { summonerNames },
-        });
+    if (summonerNames !== "") {
+      input = summonerNames.split("님이 로비에 참가하셨습니다.");
+
+      if (input.length !== 0) {
+        if (called) {
+          //console.log("fetching");
+          refetch({ summonerNames: input });
+        } else {
+          //console.log("fetching");
+          getAllChampInfo({
+            variables: { summonerNames: input },
+          });
+        }
       }
     }
   }, [summonerNames]);
 
-  if (loading || leagueLoading) {
-    return (
-      <Layout>
-        <div
-          style={{
-            width: "100%",
-            position: "fixed",
-            top: 80,
-            backgroundColor: "lightgrey",
-            paddingBottom: 5,
-          }}
-        >
-          <form
-            onSubmit={handleSubmit(onSubmit)}
-            style={{
-              width: "100%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Input
-              {...register("summonerInfos")}
-              type="text"
-              placeholder="copy and paste, xxx 님이 방에 참가하셨습니다, xxx 님이 방에 참가하셨습니다."
-            ></Input>
-            <Search type="submit" value="loading" loading="true" disabled />
-          </form>
-        </div>
-      </Layout>
-    );
-  }
   return (
     <Layout>
-      <div
+      <HeaderInput
+        setState={setSummonerNames}
+        loading={loading}
+        gettingLeague={leagueLoading}
+        placeholder={`copy and paste, xxx 님이 로비에 참가하셨습니다, xxx 님이 로비에 참가하셨습니다.`}
+      />
+      <ColumnContainer
         style={{
-          width: "100%",
-          position: "fixed",
-          top: 80,
-          backgroundColor: "lightgrey",
-          paddingBottom: 5,
+          justifyContent: "top",
+          alignItems: "center",
+          height: "80%",
+          width: 960,
+          padding: 3,
         }}
       >
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          style={{
-            width: "100%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Input
-            {...register("summonerInfos")}
-            type="text"
-            placeholder="copy and paste, xxx 님이 방에 참가하셨습니다, xxx 님이 방에 참가하셨습니다."
-          ></Input>
-          <Search type="submit" value="search" />
-        </form>
-      </div>
-      <ChampContainer>
-        {leagueInfo &&
+        {error ? (
+          <p>{"Check All Ally's SummonerNames are right"}</p>
+        ) : (
+          leagueInfo &&
           data?.getAllChampInfo?.map((ele, index) => {
             return (
               <div
@@ -155,7 +89,7 @@ const MultiSearch = () => {
                   display: "flex",
                   alignItems: "center",
                   backgroundColor: "rgba(255, 192, 203)",
-                  width: "100%",
+                  width: "90%",
                   padding: 5,
                   borderRadius: 4,
                   marginBottom: 5,
@@ -171,7 +105,7 @@ const MultiSearch = () => {
                       style={{
                         margin: 3,
                         marginBottom: 5,
-                        fontSize: 30,
+                        fontSize: 20,
                         fontWeight: "bold",
                       }}
                     >
@@ -187,20 +121,36 @@ const MultiSearch = () => {
                       style={{ margin: 3, fontSize: 15 }}
                     >{`${leagueInfo.getLeagueInfo[index].wins} W / ${leagueInfo.getLeagueInfo[index].losses} L`}</p>
                   </ColumnContainer>
-                  {/* <ColumnContainer>
+                  {/* <ColumnContainer
+                    style={{ border: "1px solid", borderBottom: "none" }}
+                  >
                     {ele?.champ?.map((ele) => {
                       return (
                         <RowContainer
                           justifyContent="flex-start"
+                          alignItems="cetner"
                           width="250px"
                           key={ele.id}
+                          style={{
+                            backgroundColor: "lightGrey",
+                            borderBottom: "1px solid",
+                          }}
                         >
                           <img
                             src={ele.championImg}
                             style={{ width: 25, height: 25 }}
                           ></img>
-                          <div style={{ width: 80 }}>
-                            <p style={{ margin: 3, fontSize: 12 }}>
+                          <div
+                            style={{
+                              width: 80,
+                            }}
+                          >
+                            <p
+                              style={{
+                                margin: 3,
+                                fontSize: 12,
+                              }}
+                            >
                               {ele.championName}
                             </p>
                           </div>
@@ -227,8 +177,9 @@ const MultiSearch = () => {
                 </RowContainer>
               </div>
             );
-          })}
-      </ChampContainer>
+          })
+        )}
+      </ColumnContainer>
     </Layout>
   );
 };

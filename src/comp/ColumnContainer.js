@@ -7,9 +7,13 @@ const Container = styled.div`
   justify-content: ${(props) => props.justifyContent};
 `;
 
-const ColumnContainer = ({ children, justifyContent, alignItems }) => {
+const ColumnContainer = ({ children, justifyContent, alignItems, style }) => {
   return (
-    <Container justifyContent={justifyContent} alignItems={alignItems}>
+    <Container
+      justifyContent={justifyContent}
+      alignItems={alignItems}
+      style={style}
+    >
       {children}
     </Container>
   );
