@@ -7,66 +7,117 @@ import HeaderInput from "../comp/HeaderInput";
 import {
   GETALLCHAMPINFO_QUERY,
   GETLEAGUEINFO_QUERY,
+  GETRECENTMATCHES_QUERY,
+  GETSUMMONERSBYNAME_QUERY,
   UPDATECHAMPSINFO_MUTATION,
   UPDATEIDS_MUTATION,
 } from "../Schema";
 import { withTheme } from "styled-components";
+import { URI } from "../apollo";
 
 const MultiSearch = () => {
-  const [getAllChampInfo, { data, loading, called, refetch, error }] =
-    useLazyQuery(GETALLCHAMPINFO_QUERY, {
-      fetchPolicy: "network-only",
-      notifyOnNetworkStatusChange: true,
-      onCompleted: async ({ getAllChampInfo }) => {
-        let summonerIds = [];
-        let puuids = [];
-        for await (const ele of getAllChampInfo) {
-          summonerIds.push(ele.user.id);
-          puuids.push(ele.user.puuid);
-        }
-        //console.log(puuids);
-        getLeagueInfo({ variables: { summonerIds } });
-        updateIds({
-          variables: { summonerNames: input },
-        });
-        updateChampsInfo({
-          variables: { puuids },
-        });
-      },
-    });
+  // const getChampInfoOption = {
+  //   fetchPolicy: "network-only",
+  //   notifyOnNetworkStatusChange: true,
+  //   onCompleted: async ({ getAllChampInfo }) => {
+  //     //console.log(getAllChampInfo);
+  //     let summonerIds = [];
+  //     let puuids = [];
+  //     for await (const ele of getAllChampInfo) {
+  //       summonerIds.push(ele.user.id);
+  //       puuids.push(ele.user.puuid);
+  //     }
+  //     //console.log(puuids);
+  //     getLeagueInfo({ variables: { summonerIds } });
+  //     await updateIds({
+  //       variables: { summonerNames },
+  //     });
+  //     getRecentMatches({ variables: { puuids } });
+  //     updateChampsInfo({
+  //       variables: { puuids },
+  //       onCompleted: () => {
+  //         refetch({ summonerNames });
+  //         refetchRecentMatches({ puuids });
+  //       },
+  //     });
+  //   },
+  // };
+
+  const [
+    getSummonersByName,
+    {
+      data: summoners,
+      refetch: refetchGetSummonersByName,
+      loading: getSummonersLoading,
+    },
+  ] = useLazyQuery(GETSUMMONERSBYNAME_QUERY, {
+    onCompleted: async ({ getSummonersByName }) => {
+      let summonerIds = [];
+      let puuids = [];
+      for await (const ele of getSummonersByName) {
+        summonerIds.push(ele.id);
+        puuids.push(ele.puuid);
+      }
+      getAllChampInfo({ variables: { puuids } });
+      getLeagueInfo({ variables: { summonerIds } });
+      await updateIds({
+        variables: { summonerNames },
+      });
+      getRecentMatches({ variables: { puuids } });
+      updateChampsInfo({
+        variables: { puuids },
+        onCompleted: () => {
+          refetchGetAllChampInfo({ puuids });
+          refetchRecentMatches({ puuids });
+        },
+      });
+    },
+  });
+  const [
+    getAllChampInfo,
+    { data, loading, called, refetch: refetchGetAllChampInfo, error },
+  ] = useLazyQuery(GETALLCHAMPINFO_QUERY, {
+    fetchPolicy: "network-only",
+    notifyOnNetworkStatusChange: true,
+  });
   const [getLeagueInfo, { data: leagueInfo, loading: leagueLoading }] =
     useLazyQuery(GETLEAGUEINFO_QUERY);
   const [updateChampsInfo, { data: updateChampReturn }] = useMutation(
     UPDATECHAMPSINFO_MUTATION
   );
   const [updateIds] = useMutation(UPDATEIDS_MUTATION);
-  const [summonerNames, setSummonerNames] = useState("");
-  let input = [];
+  const [
+    getRecentMatches,
+    { data: recentMatches, refetch: refetchRecentMatches },
+  ] = useLazyQuery(GETRECENTMATCHES_QUERY);
+  const [summonerNames, setSummonerNames] = useState([]);
+  const [input, setInput] = useState("");
 
   useEffect(() => {
     if (summonerNames !== "") {
-      input = summonerNames.split("님이 로비에 참가하셨습니다.");
-
-      if (input.length !== 0) {
+      if (summonerNames.length !== 0) {
         if (called) {
           //console.log("fetching");
-          refetch({ summonerNames: input });
+          refetchGetSummonersByName({ summonerNames });
         } else {
           //console.log("fetching");
-          getAllChampInfo({
-            variables: { summonerNames: input },
+          getSummonersByName({
+            variables: { summonerNames },
           });
         }
       }
     }
   }, [summonerNames]);
+  useEffect(() => {
+    if (input !== "")
+      setSummonerNames(input.split("님이 로비에 참가하셨습니다."));
+  }, [input]);
 
   return (
     <Layout>
       <HeaderInput
-        setState={setSummonerNames}
-        loading={loading}
-        gettingLeague={leagueLoading}
+        setState={setInput}
+        loading={loading || leagueLoading || getSummonersLoading}
         placeholder={`copy and paste, xxx 님이 로비에 참가하셨습니다, xxx 님이 로비에 참가하셨습니다.`}
       />
       <ColumnContainer
@@ -94,7 +145,7 @@ const MultiSearch = () => {
                   borderRadius: 4,
                   marginBottom: 5,
                 }}
-                key={ele.user.id}
+                key={summoners.getSummonersByName[index].id}
               >
                 <RowContainer width="100%" justifyContent="space-between">
                   <ColumnContainer
@@ -103,77 +154,164 @@ const MultiSearch = () => {
                   >
                     <p
                       style={{
-                        margin: 3,
-                        marginBottom: 5,
+                        margin: 0,
                         fontSize: 20,
                         fontWeight: "bold",
                       }}
                     >
-                      {ele.user.name}
+                      {summoners.getSummonersByName[index].name}
                     </p>
+                    <img
+                      src={`${URI}/img/${leagueInfo.getLeagueInfo[index]?.tier}.png`}
+                      style={{
+                        height: 100,
+                      }}
+                    />
                     <p style={{ margin: 3, fontSize: 15 }}>
                       {`${
-                        leagueInfo.getLeagueInfo[index].tier +
-                        leagueInfo.getLeagueInfo[index].rank
-                      } - ${leagueInfo.getLeagueInfo[index].leaguePoints}`}
+                        leagueInfo.getLeagueInfo[index]?.tier +
+                        leagueInfo.getLeagueInfo[index]?.rank
+                      } - ${leagueInfo.getLeagueInfo[index]?.leaguePoints}`}
                     </p>
                     <p
                       style={{ margin: 3, fontSize: 15 }}
-                    >{`${leagueInfo.getLeagueInfo[index].wins} W / ${leagueInfo.getLeagueInfo[index].losses} L`}</p>
+                    >{`${leagueInfo.getLeagueInfo[index]?.wins} W / ${leagueInfo.getLeagueInfo[index]?.losses} L`}</p>
                   </ColumnContainer>
-                  {/* <ColumnContainer
-                    style={{ border: "1px solid", borderBottom: "none" }}
-                  >
-                    {ele?.champ?.map((ele) => {
-                      return (
-                        <RowContainer
-                          justifyContent="flex-start"
-                          alignItems="cetner"
-                          width="250px"
-                          key={ele.id}
-                          style={{
-                            backgroundColor: "lightGrey",
-                            borderBottom: "1px solid",
-                          }}
-                        >
-                          <img
-                            src={ele.championImg}
-                            style={{ width: 25, height: 25 }}
-                          ></img>
-                          <div
+                  <RowContainer>
+                    <ColumnContainer
+                      style={{ border: "1px solid", borderBottom: "none" }}
+                    >
+                      {ele?.map((champObj) => {
+                        // console.log(
+                        //   ele.user.name,
+                        //   champObj.championName,
+                        //   champObj.win,
+                        //   champObj.lose
+                        // );
+                        return (
+                          <RowContainer
+                            justifyContent="flex-start"
+                            alignItems="cetner"
+                            width="265px"
+                            key={
+                              summoners.getSummonersByName[index].id +
+                              champObj.id
+                            }
                             style={{
-                              width: 80,
+                              backgroundColor: "lightGrey",
+                              borderBottom: "1px solid",
                             }}
                           >
-                            <p
+                            <img
+                              src={champObj.championImg}
+                              style={{ width: 25, height: 25 }}
+                            ></img>
+                            <div
                               style={{
-                                margin: 3,
-                                fontSize: 12,
+                                width: 80,
+                                height: 25,
+                                display: "flex",
+                                alignItems: "center",
+                                borderRight: "1px solid",
                               }}
                             >
-                              {ele.championName}
-                            </p>
-                          </div>
-                          <div style={{ width: 80 }}>
-                            <p style={{ margin: 3, fontSize: 12 }}>
-                              {ele.win + "W / " + ele.lose + "L"}
-                            </p>
-                          </div>
-                          <div style={{ width: 80 }}>
-                            <p style={{ margin: 3, fontSize: 12 }}>
-                              {`${(ele.kill / (ele.win + ele.lose)).toFixed(
-                                1
-                              )}/${(ele.death / (ele.win + ele.lose)).toFixed(
-                                1
-                              )}/${(ele.assist / (ele.win + ele.lose)).toFixed(
-                                1
-                              )}`}
-                            </p>
-                          </div>
-                        </RowContainer>
-                      );
-                    })}
-                  </ColumnContainer> */}
+                              <p
+                                style={{
+                                  margin: 3,
+                                  fontSize: 12,
+                                }}
+                              >
+                                {champObj.championName}
+                              </p>
+                            </div>
+                            <div
+                              style={{
+                                width: 80,
+                                height: 25,
+                                display: "flex",
+                                alignItems: "center",
+                                borderRight: "1px solid",
+                              }}
+                            >
+                              <p style={{ margin: 3, fontSize: 12 }}>
+                                {champObj.win + "W / " + champObj.lose + "L"}
+                              </p>
+                            </div>
+                            <div
+                              style={{
+                                width: 80,
+                                height: 25,
+                                display: "flex",
+                                alignItems: "center",
+                              }}
+                            >
+                              <p style={{ margin: 3, fontSize: 12 }}>
+                                {`${(
+                                  champObj.kill /
+                                  (champObj.win + champObj.lose)
+                                ).toFixed(1)}/${(
+                                  champObj.death /
+                                  (champObj.win + champObj.lose)
+                                ).toFixed(1)}/${(
+                                  champObj.assist /
+                                  (champObj.win + champObj.lose)
+                                ).toFixed(1)}`}
+                              </p>
+                            </div>
+                          </RowContainer>
+                        );
+                      })}
+                    </ColumnContainer>
+                    <ColumnContainer
+                      style={{ border: "1px solid", borderBottom: "none" }}
+                    >
+                      {recentMatches?.getRecentMatches[index]?.map((match) => {
+                        return (
+                          <RowContainer
+                            justifyContent="flex-start"
+                            width="120px"
+                            key={match.matchId}
+                            style={{
+                              backgroundColor: `${
+                                match.win ? "skyblue" : "tomato"
+                              }`,
+                              borderBottom: "1px solid",
+                            }}
+                          >
+                            <img
+                              src={match.championImg}
+                              style={{ width: 25, height: 25 }}
+                            ></img>
+                            <div
+                              style={{
+                                width: 40,
+                                height: 25,
+                                display: "flex",
+                                alignItems: "center",
+                                borderRight: "1px solid",
+                              }}
+                            >
+                              <p style={{ margin: 3, fontSize: 12 }}>
+                                {`${match.win ? "win" : "lose"}`}
+                              </p>
+                            </div>
+                            <div
+                              style={{
+                                width: 55,
+                                height: 25,
+                                display: "flex",
+                                alignItems: "center",
+                              }}
+                            >
+                              <p style={{ margin: 3, fontSize: 12 }}>
+                                {`${match.kills}/${match.deaths}/${match.assist}`}
+                              </p>
+                            </div>
+                          </RowContainer>
+                        );
+                      })}
+                    </ColumnContainer>
+                  </RowContainer>
                 </RowContainer>
               </div>
             );

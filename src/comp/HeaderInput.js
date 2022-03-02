@@ -24,7 +24,7 @@ const Search = styled.input`
   }
 `;
 
-const HeaderInput = ({ setState, loading, gettingLeague, placeholder }) => {
+const HeaderInput = ({ setState, loading, placeholder }) => {
   //value for Input
   const [value, setValue] = useState("");
 
@@ -64,7 +64,7 @@ const HeaderInput = ({ setState, loading, gettingLeague, placeholder }) => {
           onChange={handleChange}
           placeholder={placeholder}
         ></Input>
-        {loading || gettingLeague ? (
+        {loading ? (
           <Search type="submit" value="loading" loading="true" disabled />
         ) : (
           <Search type="submit" value="search" />

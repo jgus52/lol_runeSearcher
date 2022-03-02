@@ -13,6 +13,7 @@ import {
   UPDATECHAMPSINFO_MUTATION,
   UPDATEIDS_MUTATION,
 } from "../Schema";
+import { URI } from "../apollo";
 
 const Home = () => {
   const [
@@ -78,9 +79,8 @@ const Home = () => {
     <Layout>
       <HeaderInput
         setState={setSummonerName}
-        loading={loading}
-        gettingLeague={gettingLeague}
-        placeholder={`Put Summoner Name`}
+        loading={loading || gettingLeague}
+        placeholder={`Put Summoner Name Playing Game`}
       />
       <ColumnContainer
         style={{
@@ -136,6 +136,12 @@ const Home = () => {
                   <ColumnContainer alignItems={"flex-start"}>
                     {leagueInfo ? (
                       <>
+                        <img
+                          src={`${URI}/img/${leagueInfo.getLeagueInfo[index]?.tier}.png`}
+                          style={{
+                            height: 40,
+                          }}
+                        />
                         <p style={{ fontSize: 15, margin: 3 }}>
                           {leagueInfo.getLeagueInfo[index]?.tier +
                             " " +

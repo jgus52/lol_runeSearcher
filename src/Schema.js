@@ -46,23 +46,40 @@ export const GETCHAMPINFO_QUERY = gql`
 `;
 
 export const GETALLCHAMPINFO_QUERY = gql`
-  query getAllChampInfo($summonerNames: [String]) {
-    getAllChampInfo(summonerNames: $summonerNames) {
-      champ {
-        id
-        championName
-        championImg
-        win
-        lose
-        kill
-        death
-        assist
-      }
-      user {
-        id
-        puuid
-        name
-      }
+  query getAllChampInfo($puuids: [String]) {
+    getAllChampInfo(puuids: $puuids) {
+      id
+      championName
+      championImg
+      win
+      lose
+      kill
+      death
+      assist
+    }
+  }
+`;
+
+export const GETSUMMONERSBYNAME_QUERY = gql`
+  query getSummonersByName($summonerNames: [String]) {
+    getSummonersByName(summonerNames: $summonerNames) {
+      accountId
+      puuid
+      id
+      name
+    }
+  }
+`;
+
+export const GETRECENTMATCHES_QUERY = gql`
+  query getRecentMatches($puuids: [String]) {
+    getRecentMatches(puuids: $puuids) {
+      championImg
+      matchId
+      win
+      kills
+      deaths
+      assist
     }
   }
 `;
