@@ -110,9 +110,8 @@ const Home = () => {
                 style={{
                   justifyContent: "space-between",
                   alignItems: "center",
-                  height: "80%",
+                  height: 110,
                   width: 800,
-                  padding: 3,
                 }}
               >
                 <RowContainer justifyContent="center">
