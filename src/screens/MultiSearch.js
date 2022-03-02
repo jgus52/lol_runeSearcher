@@ -60,17 +60,17 @@ const MultiSearch = () => {
       }
       getAllChampInfo({ variables: { puuids } });
       getLeagueInfo({ variables: { summonerIds } });
-      await updateIds({
-        variables: { summonerNames },
-      });
-      getRecentMatches({ variables: { puuids } });
-      updateChampsInfo({
-        variables: { puuids },
-        onCompleted: () => {
-          refetchGetAllChampInfo({ puuids });
-          refetchRecentMatches({ puuids });
-        },
-      });
+      // await updateIds({
+      //   variables: { summonerNames },
+      // });
+      // getRecentMatches({ variables: { puuids } });
+      // updateChampsInfo({
+      //   variables: { puuids },
+      //   onCompleted: () => {
+      //     refetchGetAllChampInfo({ puuids });
+      //     refetchRecentMatches({ puuids });
+      //   },
+      // });
     },
   });
   const [
@@ -177,7 +177,7 @@ const MultiSearch = () => {
                       style={{ margin: 3, fontSize: 15 }}
                     >{`${leagueInfo.getLeagueInfo[index]?.wins} W / ${leagueInfo.getLeagueInfo[index]?.losses} L`}</p>
                   </ColumnContainer>
-                  <RowContainer>
+                  {/* <RowContainer>
                     <ColumnContainer
                       style={{ border: "1px solid", borderBottom: "none" }}
                     >
@@ -311,7 +311,7 @@ const MultiSearch = () => {
                         );
                       })}
                     </ColumnContainer>
-                  </RowContainer>
+                  </RowContainer> */}
                 </RowContainer>
               </div>
             );
