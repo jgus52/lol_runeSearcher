@@ -12,37 +12,10 @@ import {
   UPDATECHAMPSINFO_MUTATION,
   UPDATEIDS_MUTATION,
 } from "../Schema";
-import { withTheme } from "styled-components";
 import { URI } from "../apollo";
+import ChampInfos from "../comp/ChampInfos";
 
 const MultiSearch = () => {
-  // const getChampInfoOption = {
-  //   fetchPolicy: "network-only",
-  //   notifyOnNetworkStatusChange: true,
-  //   onCompleted: async ({ getAllChampInfo }) => {
-  //     //console.log(getAllChampInfo);
-  //     let summonerIds = [];
-  //     let puuids = [];
-  //     for await (const ele of getAllChampInfo) {
-  //       summonerIds.push(ele.user.id);
-  //       puuids.push(ele.user.puuid);
-  //     }
-  //     //console.log(puuids);
-  //     getLeagueInfo({ variables: { summonerIds } });
-  //     await updateIds({
-  //       variables: { summonerNames },
-  //     });
-  //     getRecentMatches({ variables: { puuids } });
-  //     updateChampsInfo({
-  //       variables: { puuids },
-  //       onCompleted: () => {
-  //         refetch({ summonerNames });
-  //         refetchRecentMatches({ puuids });
-  //       },
-  //     });
-  //   },
-  // };
-
   const [
     getSummonersByName,
     {
@@ -58,19 +31,19 @@ const MultiSearch = () => {
         summonerIds.push(ele.id);
         puuids.push(ele.puuid);
       }
-      getAllChampInfo({ variables: { puuids } });
+      getAllChampInfo({ variables: { puuids, take: 8 } });
       getLeagueInfo({ variables: { summonerIds } });
-      // await updateIds({
-      //   variables: { summonerNames },
-      // });
-      // getRecentMatches({ variables: { puuids } });
-      // updateChampsInfo({
-      //   variables: { puuids },
-      //   onCompleted: () => {
-      //     refetchGetAllChampInfo({ puuids });
-      //     refetchRecentMatches({ puuids });
-      //   },
-      // });
+      await updateIds({
+        variables: { summonerNames },
+      });
+      getRecentMatches({ variables: { puuids, take: 8 } });
+      updateChampsInfo({
+        variables: { puuids },
+        onCompleted: () => {
+          refetchGetAllChampInfo({ puuids, take: 8 });
+          refetchRecentMatches({ puuids, take: 8 });
+        },
+      });
     },
   });
   const [
@@ -177,11 +150,16 @@ const MultiSearch = () => {
                       style={{ margin: 3, fontSize: 15 }}
                     >{`${leagueInfo.getLeagueInfo[index]?.wins} W / ${leagueInfo.getLeagueInfo[index]?.losses} L`}</p>
                   </ColumnContainer>
-                  {/* <RowContainer>
+                  <RowContainer>
                     <ColumnContainer
                       style={{ border: "1px solid", borderBottom: "none" }}
                     >
-                      {ele?.map((champObj) => {
+                      <ChampInfos
+                        summoner={summoners.getSummonersByName[index]}
+                        champs={ele}
+                        full={false}
+                      />
+                      {/* {ele?.map((champObj) => {
                         // console.log(
                         //   ele.user.name,
                         //   champObj.championName,
@@ -260,7 +238,7 @@ const MultiSearch = () => {
                             </div>
                           </RowContainer>
                         );
-                      })}
+                      })} */}
                     </ColumnContainer>
                     <ColumnContainer
                       style={{ border: "1px solid", borderBottom: "none" }}
@@ -311,7 +289,7 @@ const MultiSearch = () => {
                         );
                       })}
                     </ColumnContainer>
-                  </RowContainer> */}
+                  </RowContainer>
                 </RowContainer>
               </div>
             );

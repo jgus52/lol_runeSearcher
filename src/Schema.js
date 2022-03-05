@@ -46,8 +46,8 @@ export const GETCHAMPINFO_QUERY = gql`
 `;
 
 export const GETALLCHAMPINFO_QUERY = gql`
-  query getAllChampInfo($puuids: [String]) {
-    getAllChampInfo(puuids: $puuids) {
+  query getAllChampInfo($puuids: [String], $take: Int, $cursor: String) {
+    getAllChampInfo(puuids: $puuids, take: $take, cursor: $cursor) {
       id
       championName
       championImg
@@ -71,11 +71,41 @@ export const GETSUMMONERSBYNAME_QUERY = gql`
   }
 `;
 
+export const GETSUMMONER_QUERY = gql`
+  query getSummoner($summonerName: String!) {
+    getSummoner(summonerName: $summonerName) {
+      profileIcon
+      puuid
+      id
+      name
+    }
+  }
+`;
+
 export const GETRECENTMATCHES_QUERY = gql`
-  query getRecentMatches($puuids: [String]) {
-    getRecentMatches(puuids: $puuids) {
+  query getRecentMatches($puuids: [String], $take: Int) {
+    getRecentMatches(puuids: $puuids, take: $take) {
       championImg
       matchId
+      win
+      kills
+      deaths
+      assist
+    }
+  }
+`;
+
+export const GETFULLRECENTMATCHES_QUERY = gql`
+  query getFullRecentMatches($puuid: String, $take: Int, $cursor: String) {
+    getFullRecentMatches(puuid: $puuid, take: $take, cursor: $cursor) {
+      participants {
+        championImg
+        win
+        kills
+        deaths
+        assist
+      }
+      championImg
       win
       kills
       deaths
